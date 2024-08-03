@@ -1,28 +1,50 @@
 const express = require("express");
-const {
-  getMedications,
-  addMedication,
-  likeMedication,
-  addComment,
-} = require("../controllers/medications");
-const { authAdmin } = require("../middlewares/auth");
-const { authorize } = require("../middlewares/authorize");
 const router = express.Router();
+const {
+  createMedication,
+  getMedications,
+  getMedicationById,
+  updateMedication,
+  deleteMedication,
+} = require("../controllers/medications");
+const {
+  authMiddleware,
+  authorizeMiddleware,
+} = require("../middlewares/authMiddleware");
+
+// @route POST api/medications
+// @desc Create medication
+router.post(
+  "/",
+  authMiddleware,
+  authorizeMiddleware("admin"),
+  createMedication
+);
 
 // @route GET api/medications
 // @desc Get all medications
 router.get("/", getMedications);
 
-// @route POST api/medications
-// @desc Add a new medication (admin only)
-router.post("/", authAdmin, authorize, addMedication);
+// @route GET api/medications/:id
+// @desc Get medication by ID
+router.get("/:id", getMedicationById);
 
-// @route POST api/medications/like/:id
-// @desc Like a medication
-router.post("/like/:id", likeMedication);
+// @route PUT api/medications/:id
+// @desc Update medication by ID
+router.put(
+  "/:id",
+  authMiddleware,
+  authorizeMiddleware("admin"),
+  updateMedication
+);
 
-// @route POST api/medications/comment/:id
-// @desc Add a comment to a medication
-router.post("/comment/:id", addComment);
+// @route DELETE api/medications/:id
+// @desc Soft delete medication by ID
+router.delete(
+  "/:id",
+  authMiddleware,
+  authorizeMiddleware("admin"),
+  deleteMedication
+);
 
 module.exports = router;
