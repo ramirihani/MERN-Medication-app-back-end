@@ -23,7 +23,7 @@ router.post(
 
 // @route GET api/medications
 // @desc Get all medications
-router.get("/", getMedications);
+router.get("/", authMiddleware, getMedications);
 
 // @route GET api/medications/:id
 // @desc Get medication by ID

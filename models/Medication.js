@@ -18,6 +18,7 @@ const medicationSchema = new mongoose.Schema({
   likes: [likeSchema],
   comments: [commentSchema],
   quantity: { type: Number, required: true },
+  deleted: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model("Medication", medicationSchema);

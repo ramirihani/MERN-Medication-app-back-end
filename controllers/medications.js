@@ -17,13 +17,18 @@ exports.createMedication = async (req, res) => {
   }
 };
 
-// Get All Medications
+// Get All Medications based on the connected user
 exports.getMedications = async (req, res) => {
   try {
-    const medications = await Medication.find();
-    res.status(200).json(medications);
+    let query = {};
+    if (req.user.role !== "admin" && req.user.role !== "superadmin") {
+      query.deleted = false;
+    }
+    const medications = await Medication.find(query);
+    res.json(medications);
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    console.error(err.message);
+    res.status(500).send("Server error");
   }
 };
 
@@ -75,16 +80,21 @@ exports.updateMedication = async (req, res) => {
   }
 };
 
-// Soft Delete Medication
+// Soft delete medication by ID
 exports.deleteMedication = async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const medication = await Medication.findById(req.params.id);
-    if (!medication)
+    const medication = await Medication.findById(id);
+    if (!medication) {
       return res.status(404).json({ msg: "Medication not found" });
-    medication.deleted = true; // Add a deleted flag if you are marking for soft delete
+    }
+
+    medication.deleted = true; // Mark as deleted
     await medication.save();
-    res.status(200).json({ msg: "Medication deleted" });
+    res.json({ msg: "Medication removed" });
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    console.error(err.message);
+    res.status(500).send("Server error");
   }
 };
