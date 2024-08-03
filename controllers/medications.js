@@ -1,57 +1,90 @@
 const Medication = require("../models/Medication");
-
-// Get all medications
-exports.getMedications = async (req, res) => {
+const mongoose = require("mongoose");
+// Create Medication
+exports.createMedication = async (req, res) => {
   try {
-    const medications = await Medication.find();
-    res.json(medications);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
-};
-
-// Add a new medication
-exports.addMedication = async (req, res) => {
-  const { name, description, image, quantity } = req.body;
-  try {
+    const { name, description, image, quantity } = req.body;
     const newMedication = new Medication({
       name,
       description,
       image,
       quantity,
     });
-    const medication = await newMedication.save();
+    await newMedication.save();
+    res.status(201).json(newMedication);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+// Get All Medications
+exports.getMedications = async (req, res) => {
+  try {
+    const medications = await Medication.find();
+    res.status(200).json(medications);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+// Get Medication by ID
+exports.getMedicationById = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ msg: "Invalid medication ID" });
+  }
+
+  try {
+    const medication = await Medication.findById(id);
+    if (!medication) {
+      return res.status(404).json({ msg: "Medication not found" });
+    }
     res.json(medication);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).send("Server error");
   }
 };
 
-// Like a medication
-exports.likeMedication = async (req, res) => {
+// Update Medication
+exports.updateMedication = async (req, res) => {
+  const { id } = req.params;
+  const { name, description, image, quantity } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ msg: "Invalid medication ID" });
+  }
+
   try {
-    const medication = await Medication.findById(req.params.id);
-    medication.likes.push({ userId: req.body.userId });
-    await medication.save();
-    res.json(medication.likes);
+    // Find medication by ID and update
+    const medication = await Medication.findByIdAndUpdate(
+      id,
+      { name, description, image, quantity },
+      { new: true, runValidators: true } // Return the updated document
+    );
+
+    if (!medication) {
+      return res.status(404).json({ msg: "Medication not found" });
+    }
+
+    res.json(medication);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).send("Server error");
   }
 };
 
-// Add a comment to a medication
-exports.addComment = async (req, res) => {
-  const { userId, comment } = req.body;
+// Soft Delete Medication
+exports.deleteMedication = async (req, res) => {
   try {
     const medication = await Medication.findById(req.params.id);
-    medication.comments.push({ userId, comment });
+    if (!medication)
+      return res.status(404).json({ msg: "Medication not found" });
+    medication.deleted = true; // Add a deleted flag if you are marking for soft delete
     await medication.save();
-    res.json(medication.comments);
+    res.status(200).json({ msg: "Medication deleted" });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({ msg: err.message });
   }
 };
