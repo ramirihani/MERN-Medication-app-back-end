@@ -69,19 +69,19 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    console.log("Logging in user with email:", email); // Debug log
+    console.log("Logging in user with email:", email);
 
     // Check if user exists
     let user = await User.findOne({ email });
     if (!user) {
-      console.log("User not found with email:", email); // Debug log
+      console.log("User not found with email:", email);
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
     // Check password
-    console.log("Stored hashed password:", user.password); // Debug log
+    console.log("Stored hashed password:", user.password);
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log("Password match status:", isMatch); // Debug log
+    console.log("Password match status:", isMatch);
     if (!isMatch) {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
@@ -99,7 +99,10 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "5 days" },
       (err, token) => {
-        if (err) throw err;
+        if (err) {
+          console.error("JWT signing error:", err);
+          return res.status(500).send("Server error");
+        }
         res.json({
           token,
           user: {
@@ -112,7 +115,7 @@ exports.login = async (req, res) => {
       }
     );
   } catch (err) {
-    console.error(err.message);
+    console.error("Login error:", err.message);
     res.status(500).send("Server error");
   }
 };
