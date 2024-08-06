@@ -11,6 +11,7 @@ const {
   authMiddleware,
   authorizeMiddleware,
 } = require("../middlewares/authMiddleware");
+const upload = require("../multerConfig");
 
 // @route POST api/medications
 // @desc Create medication
@@ -18,6 +19,7 @@ router.post(
   "/",
   authMiddleware,
   authorizeMiddleware("admin"),
+  upload.single("image"), // Middleware to handle file upload
   createMedication
 );
 
@@ -35,6 +37,7 @@ router.put(
   "/:id",
   authMiddleware,
   authorizeMiddleware("admin"),
+  upload.single("image"), // Middleware to handle file upload
   updateMedication
 );
 
