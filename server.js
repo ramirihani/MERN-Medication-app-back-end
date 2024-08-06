@@ -3,6 +3,7 @@ require("dotenv").config(); // Ensure this line is present at the top
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const path = require("path"); // Import path module
 const connectDB = require("./config/database");
 const authRoutes = require("./routes/auth");
 const medicationRoutes = require("./routes/medications");
@@ -15,6 +16,9 @@ connectDB();
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
+// Serve static files from the 'uploads' directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Define Routes
 app.use("/api/auth", authRoutes);
